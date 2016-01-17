@@ -2,6 +2,8 @@
 
 Rust module for encoding/decoding [varints](https://developers.google.com/protocol-buffers/docs/encoding) that doesn't do any IO. Inspired by the Node.js [varint](https://github.com/chrisdickinson/varint) module. I mostly wrote this to learn more about Rust.
 
+[![build status](http://img.shields.io/travis/mafintosh/varinteger-rs.svg?style=flat)](http://travis-ci.org/mafintosh/varinteger-rs)
+
 ## Usage
 
 ``` rs
