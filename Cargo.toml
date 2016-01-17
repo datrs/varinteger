@@ -4,6 +4,6 @@ version = "1.0.0"
 description = "Rust module for encoding/decoding varints that doesn't do any IO. Inspired by the Node.js varint module"
 authors = ["Mathias Buus <mathiasbuus@gmail.com>"]
 repository = "https://github.com/mafintosh/varinteger-rs"
-keywords = ["protobuf", "protocol buffers", "varint", "variable length", "variable"]
+keywords = ["protobuf", "varint", "variable", "integer"]
 readme = "README.md"
 license = "MIT"
