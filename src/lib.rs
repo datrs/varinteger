@@ -26,7 +26,7 @@ pub fn length(value: u64) -> usize {
 }
 
 pub fn encode(value: u64, buf: &mut [u8]) -> usize {
-  return encode_with_offset(value, buf, 0);
+  encode_with_offset(value, buf, 0)
 }
 
 pub fn encode_with_offset(value: u64, buf: &mut [u8], offset: usize) -> usize {
@@ -40,7 +40,7 @@ pub fn encode_with_offset(value: u64, buf: &mut [u8], offset: usize) -> usize {
   }
   buf[off] = val as u8;
 
-  return off + 1 - offset;
+  off + 1 - offset
 }
 
 pub fn decode(buf: &[u8], value: &mut u64) -> usize {
@@ -64,15 +64,15 @@ pub fn decode_with_offset(buf: &[u8], offset: usize, value: &mut u64) -> usize {
 
   *value = val;
 
-  return off - offset;
+  off - offset
 }
 
 pub fn signed_length(value: i64) -> usize {
-  return length(unsign(value));
+  length(unsign(value))
 }
 
 pub fn signed_encode(value: i64, buf: &mut [u8]) -> usize {
-  return encode_with_offset(unsign(value), buf, 0);
+  encode_with_offset(unsign(value), buf, 0)
 }
 
 pub fn signed_encode_with_offset(
@@ -80,11 +80,11 @@ pub fn signed_encode_with_offset(
   buf: &mut [u8],
   offset: usize,
 ) -> usize {
-  return encode_with_offset(unsign(value), buf, offset);
+  encode_with_offset(unsign(value), buf, offset)
 }
 
 pub fn signed_decode(buf: &[u8], value: &mut i64) -> usize {
-  return signed_decode_with_offset(buf, 0, value);
+  signed_decode_with_offset(buf, 0, value)
 }
 
 pub fn signed_decode_with_offset(
@@ -95,21 +95,21 @@ pub fn signed_decode_with_offset(
   let mut val = 0;
   let off = decode_with_offset(buf, offset, &mut val);
   *value = sign(val);
-  return off;
+  off
 }
 
 fn unsign(value: i64) -> u64 {
   if value >= 0 {
-    return (value * 2) as u64;
+    (value * 2) as u64
   } else {
-    return (value * -2 - 1) as u64;
+    (value * -2 - 1) as u64
   }
 }
 
 fn sign(value: u64) -> i64 {
   if value & 1 != 0 {
-    return -(((value + 1) / 2) as i64);
+    -(((value + 1) / 2) as i64)
   } else {
-    return (value / 2) as i64;
+    (value / 2) as i64
   }
 }
