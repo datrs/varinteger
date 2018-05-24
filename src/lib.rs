@@ -1,7 +1,7 @@
 #![crate_type = "lib"]
 #![crate_name = "varinteger"]
 
-pub fn length (value: u64) -> usize {
+pub fn length(value: u64) -> usize {
   if value < 128 {
     return 1;
   } else if value < 16384 {
@@ -25,11 +25,11 @@ pub fn length (value: u64) -> usize {
   }
 }
 
-pub fn encode (value: u64, buf: &mut [u8]) -> usize {
+pub fn encode(value: u64, buf: &mut [u8]) -> usize {
   return encode_with_offset(value, buf, 0);
 }
 
-pub fn encode_with_offset (value: u64, buf: &mut [u8], offset: usize) -> usize {
+pub fn encode_with_offset(value: u64, buf: &mut [u8], offset: usize) -> usize {
   let mut off = offset;
   let mut val = value;
 
@@ -43,11 +43,11 @@ pub fn encode_with_offset (value: u64, buf: &mut [u8], offset: usize) -> usize {
   return off + 1 - offset;
 }
 
-pub fn decode (buf: &[u8], value: &mut u64) -> usize {
+pub fn decode(buf: &[u8], value: &mut u64) -> usize {
   return decode_with_offset(buf, 0, value);
 }
 
-pub fn decode_with_offset (buf: &[u8], offset: usize, value: &mut u64) -> usize {
+pub fn decode_with_offset(buf: &[u8], offset: usize, value: &mut u64) -> usize {
   let mut val = 0 as u64;
   let mut fac = 1 as u64;
   let mut off = offset;
@@ -67,30 +67,38 @@ pub fn decode_with_offset (buf: &[u8], offset: usize, value: &mut u64) -> usize 
   return off - offset;
 }
 
-pub fn signed_length (value: i64) -> usize {
+pub fn signed_length(value: i64) -> usize {
   return length(unsign(value));
 }
 
-pub fn signed_encode (value: i64, buf: &mut [u8]) -> usize {
+pub fn signed_encode(value: i64, buf: &mut [u8]) -> usize {
   return encode_with_offset(unsign(value), buf, 0);
 }
 
-pub fn signed_encode_with_offset (value: i64, buf: &mut [u8], offset: usize) -> usize {
+pub fn signed_encode_with_offset(
+  value: i64,
+  buf: &mut [u8],
+  offset: usize,
+) -> usize {
   return encode_with_offset(unsign(value), buf, offset);
 }
 
-pub fn signed_decode (buf: &[u8], value: &mut i64) -> usize {
+pub fn signed_decode(buf: &[u8], value: &mut i64) -> usize {
   return signed_decode_with_offset(buf, 0, value);
 }
 
-pub fn signed_decode_with_offset (buf: &[u8], offset: usize, value: &mut i64) -> usize {
+pub fn signed_decode_with_offset(
+  buf: &[u8],
+  offset: usize,
+  value: &mut i64,
+) -> usize {
   let mut val = 0;
   let off = decode_with_offset(buf, offset, &mut val);
   *value = sign(val);
   return off;
 }
 
-fn unsign (value: i64) -> u64 {
+fn unsign(value: i64) -> u64 {
   if value >= 0 {
     return (value * 2) as u64;
   } else {
@@ -98,67 +106,10 @@ fn unsign (value: i64) -> u64 {
   }
 }
 
-fn sign (value: u64) -> i64 {
+fn sign(value: u64) -> i64 {
   if value & 1 != 0 {
     return -(((value + 1) / 2) as i64);
   } else {
     return (value / 2) as i64;
   }
-}
-
-// TODO: how do move these to a different file?
-
-#[test]
-fn test_encode () {
-  let mut buf = [0; 512];
-  assert_eq!(encode(100, &mut buf), 1);
-  assert_eq!(buf[0], 100);
-
-  assert_eq!(encode(1000, &mut buf), 2);
-  assert_eq!(buf[0], 232);
-  assert_eq!(buf[1], 7);
-}
-
-#[test]
-fn test_decode () {
-  let mut value = 0 as u64;
-  assert_eq!(decode(&[100], &mut value), 1);
-  assert_eq!(value, 100);
-
-  assert_eq!(decode(&[232, 7], &mut value), 2);
-  assert_eq!(value, 1000);
-}
-
-#[test]
-fn test_length () {
-  assert_eq!(length(100), 1);
-  assert_eq!(length(1000), 2);
-}
-
-#[test]
-fn test_signed_encode () {
-  let mut buf = [0; 512];
-  assert_eq!(signed_encode(100, &mut buf), 2);
-  assert_eq!(buf[0], 200);
-  assert_eq!(buf[1], 1);
-
-  assert_eq!(signed_encode(-100, &mut buf), 2);
-  assert_eq!(buf[0], 199);
-  assert_eq!(buf[1], 1);
-}
-
-#[test]
-fn test_signed_decode () {
-  let mut value = 0 as i64;
-  assert_eq!(signed_decode(&[200, 1], &mut value), 2);
-  assert_eq!(value, 100);
-
-  assert_eq!(signed_decode(&[199, 1], &mut value), 2);
-  assert_eq!(value, -100);
-}
-
-#[test]
-fn test_signed_length () {
-  assert_eq!(signed_length(100), 2);
-  assert_eq!(signed_length(-100), 2);
 }
