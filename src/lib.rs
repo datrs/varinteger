@@ -3,25 +3,25 @@
 
 pub fn length(value: u64) -> usize {
   if value < 128 {
-    return 1;
+    1
   } else if value < 16384 {
-    return 2;
+    2
   } else if value < 2097152 {
-    return 3;
+    3
   } else if value < 268435456 {
-    return 4;
+    4
   } else if value < 34359738368 {
-    return 5;
+    5
   } else if value < 4398046511104 {
-    return 6;
+    6
   } else if value < 562949953421312 {
-    return 7;
+    7
   } else if value < 72057594037927936 {
-    return 8;
+    8
   } else if value < 9223372036854775808 {
-    return 9;
+    9
   } else {
-    return 10;
+    10
   }
 }
 
