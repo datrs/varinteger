@@ -23,31 +23,5 @@ let bytes_decoded = varinteger::decode(buf, &mut value);
 println!("encoded and decoded {}", value);
 ```
 
-## API
-
-#### `encode(value: u64, buf: &mut [u8]) -> usize`
-
-Encode a `u64` integer to the buffer. Returns how many bytes were encoded.
-
-#### `encode_with_offset(value: u64, buf: &mut [u8], offset: usize) -> usize`
-
-Encode a `u64` integer at a specific offset in the buffer. Returns how many bytes were encoded.
-
-#### `length(value: u64) -> usize`
-
-Returns how many bytes are needed to encode value.
-
-#### `signed_encode(value: i64, buf: &mut [u8]) -> usize`
-
-Encode a `i64` (signed) integer to the buffer. Returns how many bytes were encoded.
-
-#### `signed_encode_with_offset(value: i64, buf: &mut [u8], offset: usize) -> usize`
-
-Encode a `i64` (signed) integer at a specific offset in the buffer. Returns how many bytes were encoded.
-
-#### `signed_length(value: i64) -> usize`
-
-Returns how many bytes are needed to encode value.
-
 ## License
 MIT
