@@ -5,23 +5,23 @@
 
 /// Returns how many bytes are needed to encode a value.
 pub fn length(value: u64) -> usize {
-  if value < 128 {
+  if value < (1 << 7) {
     1
-  } else if value < 16384 {
+  } else if value < (1 << 14) {
     2
-  } else if value < 2097152 {
+  } else if value < (1 << 21) {
     3
-  } else if value < 268435456 {
+  } else if value < (1 << 28) {
     4
-  } else if value < 34359738368 {
+  } else if value < (1 << 35) {
     5
-  } else if value < 4398046511104 {
+  } else if value < (1 << 42) {
     6
-  } else if value < 562949953421312 {
+  } else if value < (1 << 49) {
     7
-  } else if value < 72057594037927936 {
+  } else if value < (1 << 56) {
     8
-  } else if value < 9223372036854775808 {
+  } else if value < (1 << 63) {
     9
   } else {
     10
