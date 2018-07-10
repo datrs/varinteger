@@ -29,6 +29,14 @@ fn test_decode() {
 fn test_length() {
   assert_eq!(length(100), 1);
   assert_eq!(length(1000), 2);
+
+  assert_eq!(length(1 << 49), 8);
+  assert_eq!(length((1 << 56) - 1), 8);
+
+  assert_eq!(length(1 << 56), 9);
+  assert_eq!(length((1 << 63) - 1), 9);
+
+  assert_eq!(length(1 << 63), 10);
 }
 
 #[test]

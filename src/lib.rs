@@ -6,27 +6,9 @@
 /// Returns how many bytes are needed to encode a value.
 #[inline]
 pub fn length(value: u64) -> usize {
-  if value < (1 << 7) {
-    1
-  } else if value < (1 << 14) {
-    2
-  } else if value < (1 << 21) {
-    3
-  } else if value < (1 << 28) {
-    4
-  } else if value < (1 << 35) {
-    5
-  } else if value < (1 << 42) {
-    6
-  } else if value < (1 << 49) {
-    7
-  } else if value < (1 << 56) {
-    8
-  } else if value < (1 << 63) {
-    9
-  } else {
-    10
-  }
+  let zero_len = 64 - value.leading_zeros();
+  let offset = if zero_len == 0 { 7 } else { 6 };
+  ((offset + zero_len) / 7) as usize
 }
 
 /// Encode a `u64` integer to the byte slice. Returns how many bytes were
