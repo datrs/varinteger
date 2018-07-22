@@ -6,3 +6,14 @@ rust:
 matrix:
   allow_failures:
     - rust: nightly
+
+before_script: |
+  rustup toolchain install nightly &&
+  rustup component add --toolchain nightly rustfmt-preview &&
+  rustup component add --toolchain nightly clippy-preview
+script: |
+  cargo +nightly fmt -- --check &&
+  cargo build --verbose &&
+  cargo test  --verbose &&
+  cargo +nightly clippy -- -D clippy
+cache: cargo
