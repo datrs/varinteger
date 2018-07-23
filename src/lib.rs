@@ -53,7 +53,7 @@ pub fn decode_with_offset(buf: &[u8], offset: usize, value: &mut u64) -> usize {
   loop {
     let byte = buf[off];
     off += 1;
-    val += fac * ((byte & 127) as u64);
+    val += fac * u64::from(byte & 127);
     fac <<= 7;
     if byte & 128 == 0 {
       break;
