@@ -1,68 +1,73 @@
-#![cfg_attr(feature = "nightly", deny(missing_docs))]
-#![cfg_attr(feature = "nightly", feature(external_doc))]
-#![cfg_attr(feature = "nightly", doc(include = "../README.md"))]
-#![cfg_attr(test, deny(warnings))]
-
-/// Returns how many bytes are needed to encode a value.
-#[inline]
-pub fn length(value: u64) -> usize {
-  let zero_len = 64 - value.leading_zeros();
-  let offset = if zero_len == 0 { 7 } else { 6 };
-  ((offset + zero_len) / 7) as usize
-}
+extern crate failure;
+use failure::{bail, Error};
 
 /// Encode a `u64` integer to the byte slice. Returns how many bytes were
 /// encoded.
 #[inline]
-pub fn encode(value: u64, buf: &mut [u8]) -> usize {
+pub fn encode(value: u64, buf: &mut [u8]) -> Result<usize, Error> {
   encode_with_offset(value, buf, 0)
 }
 
 /// Encode a `u64` integer at a specific offset in the byte slice. Returns how
 /// many bytes were encoded.
 #[inline]
-pub fn encode_with_offset(value: u64, buf: &mut [u8], offset: usize) -> usize {
-  let mut off = offset;
-  let mut val = value;
-
-  while val > 127 {
-    buf[off] = (val as u8) | 128;
-    off += 1;
-    val >>= 7;
+pub fn encode_with_offset(
+  value: u64,
+  buf: &mut [u8],
+  offset: usize,
+) -> Result<usize, Error> {
+  let len = length(value);
+  if buf.len() < len {
+    bail!["buffer is too small to write varint"]
   }
-  buf[off] = val as u8;
-
-  off + 1 - offset
+  let mut v = value;
+  let mut off = offset;
+  while v > 127 {
+    buf[off] = (v as u8) | 128;
+    off += 1;
+    v >>= 7;
+  }
+  buf[off] = v as u8;
+  Ok(len)
 }
 
 /// Decode a byte slice into a `u64` integer. Returns how many bytes were
 /// decoded.
 #[inline]
-pub fn decode(buf: &[u8], value: &mut u64) -> usize {
-  decode_with_offset(buf, 0, value)
+pub fn decode(buf: &[u8]) -> Result<(usize, u64), Error> {
+  decode_with_offset(buf, 0usize)
 }
 
 /// Decode a byte slice into a `u64` integer at a specific offset. Returns how
 /// many bytes were decoded.
 #[inline]
-pub fn decode_with_offset(buf: &[u8], offset: usize, value: &mut u64) -> usize {
-  let mut val = 0 as u64;
-  let mut fac = 1 as u64;
-  let mut off = offset;
-
-  loop {
-    let byte = buf[off];
-    off += 1;
-    val += fac * u64::from(byte & 127);
-    fac <<= 7;
+pub fn decode_with_offset(
+  buf: &[u8],
+  _offset: usize,
+) -> Result<(usize, u64), Error> {
+  let mut value = 0u64;
+  let mut m = 1u64;
+  let mut offset = _offset;
+  for _i in 0..8 {
+    if offset >= buf.len() {
+      bail!["buffer supplied to varint decoding too small"]
+    }
+    let byte = buf[offset];
+    offset += 1;
+    value += m * u64::from(byte & 127);
+    m *= 128;
     if byte & 128 == 0 {
       break;
     }
   }
+  Ok((offset, value))
+}
 
-  *value = val;
-
-  off - offset
+/// Returns how many bytes are needed to encode a value.
+#[inline]
+pub fn length(value: u64) -> usize {
+  let msb = (64 - value.leading_zeros()) as usize;
+  (msb.max(1) + 6) / 7
 }
 
 /// Returns how many bytes are needed to encode a value.
@@ -74,7 +79,7 @@ pub fn signed_length(value: i64) -> usize {
 /// Encode a `i64` (signed) integer at a specific offset in the byte slice.
 /// Returns how many bytes were encoded.
 #[inline]
-pub fn signed_encode(value: i64, buf: &mut [u8]) -> usize {
+pub fn signed_encode(value: i64, buf: &mut [u8]) -> Result<usize, Error> {
   encode_with_offset(unsign(value), buf, 0)
 }
 
@@ -85,15 +90,15 @@ pub fn signed_encode_with_offset(
   value: i64,
   buf: &mut [u8],
   offset: usize,
-) -> usize {
+) -> Result<usize, Error> {
   encode_with_offset(unsign(value), buf, offset)
 }
 
 /// Decode a byte slice into a `i64` (signed) integer.  Returns how many bytes
 /// were decoded.
 #[inline]
-pub fn signed_decode(buf: &[u8], value: &mut i64) -> usize {
-  signed_decode_with_offset(buf, 0, value)
+pub fn signed_decode(buf: &[u8]) -> Result<(usize, i64), Error> {
+  signed_decode_with_offset(buf, 0)
 }
 
 /// Decode a byte slice into a `i64` (signed) integer at a specific offset.
@@ -102,12 +107,10 @@ pub fn signed_decode(buf: &[u8], value: &mut i64) -> usize {
 pub fn signed_decode_with_offset(
   buf: &[u8],
   offset: usize,
-  value: &mut i64,
-) -> usize {
+) -> Result<(usize, i64), Error> {
   let mut val = 0;
-  let off = decode_with_offset(buf, offset, &mut val);
-  *value = sign(val);
-  off
+  let (off, value) = decode_with_offset(buf, offset)?;
+  Ok((off, sign(value)))
 }
 
 /// Convert an `i64` into a `u64`.
