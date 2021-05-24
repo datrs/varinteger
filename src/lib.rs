@@ -1,10 +1,20 @@
-extern crate failure;
-use failure::{bail, Error};
+use std::fmt;
+
+type Result<T> = std::result::Result<T, EncodeError>;
+
+#[derive(Debug, Clone)]
+pub struct EncodeError;
+
+impl fmt::Display for EncodeError{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "buffer is too small to write varint")
+    }
+}
 
 /// Encode a `u64` integer to the byte slice. Returns how many bytes were
 /// encoded.
 #[inline]
-pub fn encode(value: u64, buf: &mut [u8]) -> Result<usize, Error> {
+pub fn encode(value: u64, buf: &mut [u8]) -> Result<usize> {
   encode_with_offset(value, buf, 0)
 }
 
@@ -15,10 +25,10 @@ pub fn encode_with_offset(
   value: u64,
   buf: &mut [u8],
   offset: usize,
-) -> Result<usize, Error> {
+) -> Result<usize> {
   let len = length(value);
   if buf.len() < len {
-    bail!["buffer is too small to write varint"]
+    return Err(EncodeError)
   }
   let mut v = value;
   let mut off = offset;
@@ -34,7 +44,7 @@ pub fn encode_with_offset(
 /// Decode a byte slice into a `u64` integer. Returns how many bytes were
 /// decoded.
 #[inline]
-pub fn decode(buf: &[u8]) -> Result<(usize, u64), Error> {
+pub fn decode(buf: &[u8]) -> Result<(usize, u64)> {
   decode_with_offset(buf, 0usize)
 }
 
@@ -44,13 +54,13 @@ pub fn decode(buf: &[u8]) -> Result<(usize, u64), Error> {
 pub fn decode_with_offset(
   buf: &[u8],
   _offset: usize,
-) -> Result<(usize, u64), Error> {
+) -> Result<(usize, u64)> {
   let mut value = 0u64;
   let mut m = 1u64;
   let mut offset = _offset;
   for _i in 0..8 {
     if offset >= buf.len() {
-      bail!["buffer supplied to varint decoding too small"]
+      return Err(EncodeError)
     }
     let byte = buf[offset];
     offset += 1;
@@ -79,7 +89,7 @@ pub fn signed_length(value: i64) -> usize {
 /// Encode a `i64` (signed) integer at a specific offset in the byte slice.
 /// Returns how many bytes were encoded.
 #[inline]
-pub fn signed_encode(value: i64, buf: &mut [u8]) -> Result<usize, Error> {
+pub fn signed_encode(value: i64, buf: &mut [u8]) -> Result<usize> {
   encode_with_offset(unsign(value), buf, 0)
 }
 
@@ -90,14 +100,14 @@ pub fn signed_encode_with_offset(
   value: i64,
   buf: &mut [u8],
   offset: usize,
-) -> Result<usize, Error> {
+) -> Result<usize> {
   encode_with_offset(unsign(value), buf, offset)
 }
 
 /// Decode a byte slice into a `i64` (signed) integer.  Returns how many bytes
 /// were decoded.
 #[inline]
-pub fn signed_decode(buf: &[u8]) -> Result<(usize, i64), Error> {
+pub fn signed_decode(buf: &[u8]) -> Result<(usize, i64)> {
   signed_decode_with_offset(buf, 0)
 }
 
@@ -107,8 +117,7 @@ pub fn signed_decode(buf: &[u8]) -> Result<(usize, i64), Error> {
 pub fn signed_decode_with_offset(
   buf: &[u8],
   offset: usize,
-) -> Result<(usize, i64), Error> {
-  let mut val = 0;
+) -> Result<(usize, i64)> {
   let (off, value) = decode_with_offset(buf, offset)?;
   Ok((off, sign(value)))
 }

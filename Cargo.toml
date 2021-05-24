@@ -7,6 +7,3 @@ repository = "https://github.com/datrs/varinteger"
 keywords = ["protobuf", "varint", "variable", "integer"]
 readme = "README.md"
 license = "MIT"
-
-[dependencies]
-failure = "0.1.8"

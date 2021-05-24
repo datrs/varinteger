@@ -1,6 +1,4 @@
-extern crate failure;
 extern crate varinteger;
-use failure::Error;
 
 use varinteger::{
   decode, encode, length, signed_decode, signed_encode, signed_length,
